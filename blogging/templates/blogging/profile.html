@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Timeline{% endblock %}
+
+{% load crispy_forms_tags %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+<div>
+    <div class="row">
+        <!-- Profile Card -->
+        <div class="col-md-3">
+            <div class="card" style="width: 18rem;">
+                <!-- Profile Image -->
+                <img
+                  src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  class="img-fluid rounded mx-auto mt-3"
+                  alt="User Image"
+                  width="100"
+                >
+                <!-- User Details -->
+                <div class="card-body text-center mt-1">
+                    <h5 class="card-title text-primary">{{ profile.username|title }}</h5>
+                    <p class="text-secondary mt-1">{{profile.email}}</p>
+                </div>
+
+                <!-- Follow/Unfollow Button -->
+                 {% if user.username != profile.username %}
+                    <form method="post" action="{% url 'handle-follow-request' user_id=profile.id %}">
+                        {% csrf_token %}
+                        {% if am_i_following %}
+                            <!-- Unfllow -->
+                            <div class="text-center mb-3">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    Unfollow
+                                </button>
+                            </div>
+                        {% else %}
+                            <!-- Follow -->
+                            <div class="text-center mb-3">
+                                <button type="submit" class="btn btn-outline-success">
+                                    Follow
+                                </button>
+                            </div>
+                        {% endif %}
+                    </form>
+                 {% endif %}
+                
+                <!-- Followers Details -->
+                <div class="row justify-content-between text-primary gx-3 mx-3 mb-2">
+                    <div class="col"><b>Followers</b> {{followers|length}}</div>
+                    <div class="col"><b>Following</b> {{following|length}}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Posts -->
+        <div class="col-md-6">
+            
+            <!-- Display Posts -->
+            <div class="mt-5">
+                <div id="postContainer">
+                    {% for post in posts %}
+                        <div class="card mx-auto m-3" style="width: 600px;">
+                            <div class="card-body">
+                                <!-- Post Header -->
+                                 <div class="row justify-content-between">
+                                    <div class="col-8" style="font-size: 20px;">
+                                        <img
+                                            src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                                            class="img-fluid rounded"
+                                            alt="User Image"
+                                            width="30"
+                                        >
+                                        <a><i>{{post.author.username|title}}</i></a>
+                                    </div>
+                                    <div class="col-4 text-secondary">
+                                        <i>Posted on {{post.posted_at|date:'f a'}}</i>
+                                    </div>
+                                 </div>
+                                <!-- Post Text -->
+                                <h5 class="card-title m-2">
+                                    {{post.post_text }}
+                                </h5>
+                                <!-- Post Image -->
+                                {% if post.image %}
+                                    <div class="text-center mb-3">
+                                        <img
+                                          src="{{post.image.url}}"
+                                          alt="Post Image"
+                                          width="300"
+                                        >
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-secondary text-center">There are no posts to display</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

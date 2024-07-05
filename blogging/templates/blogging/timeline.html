@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+
+{% block title %}Timeline{% endblock %}
+
+{% load crispy_forms_tags %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+<div>
+    <div class="row">
+        <!-- Profile Card -->
+        <div class="col-md-3">
+            <div class="card" style="width: 18rem;">
+                <!-- Profile Image -->
+                <img
+                  src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  class="img-fluid rounded mx-auto mt-3"
+                  alt="User Image"
+                  width="100"
+                >
+                <!-- User Details -->
+                <div class="card-body text-center mt-1">
+                    <h5 class="card-title text-primary">{{ user.username|title }}</h5>
+                    <p class="text-secondary mt-1">{{user.email}}</p>
+                </div>
+                
+                <!-- Followers Details -->
+                <div class="row justify-content-between text-primary gx-3 mx-3 mb-2">
+                    <div class="col"><b>Followers</b> {{followers|length}}</div>
+                    <div class="col"><b>Following</b> {{following|length}}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Posts -->
+        <div class="col-md-6">
+            <!-- Create New Post -->
+             <form id="postForm">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="text-center">
+                    <button
+                      id="submitButton"
+                      onclick="submitForm()"
+                      class="btn rounded-pill btn-md btn-primary"
+                    >
+                        New Post
+                    </button>
+                </div>
+             </form>
+            
+             <!-- Display Posts -->
+            <div class="mt-5">
+                <div id="postContainer">
+                    {% for post in posts %}
+                        <div class="card mx-auto m-3" style="width: 600px;">
+                            <div class="card-body">
+                                <!-- Post Header -->
+                                 <div class="row justify-content-between">
+                                    <div class="col-8" style="font-size: 20px;">
+                                        <img
+                                            src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                                            class="img-fluid rounded"
+                                            alt="User Image"
+                                            width="30"
+                                        >
+                                        <a
+                                          class="text-decoration-none"
+                                          href="{% url 'profile-page' user_id=post.author.id %}"
+                                        >
+                                            <i>{{post.author.username|title}}</i>
+                                        </a>
+                                    </div>
+                                    <div class="col-4 text-secondary">
+                                        <i>Posted on {{post.posted_at|date:'f a'}}</i>
+                                    </div>
+                                 </div>
+                                <!-- Post Text -->
+                                <h5 class="card-title m-2">
+                                    {{post.post_text }}
+                                </h5>
+                                <!-- Post Image -->
+                                {% if post.image %}
+                                    <div class="text-center my-3">
+                                        <img
+                                          src="{{post.image.url}}"
+                                          alt="Post Image"
+                                          width="300"
+                                        >
+                                    </div>
+                                {% endif %}
+                                <!-- Post Actions -->
+                                
+                                <!-- Likes -->
+                                <div class="row justify-content-start m-3 g-3">
+                                    <div class="col-2">
+                                        <span
+                                          class="like-icon"
+                                          data-post-id="{{post.id}}"
+                                          onclick="handleLikeAction(this)"
+                                        >
+                                            {% if user in post.likes.all %}
+                                                <i class="bi bi-heart-fill text-danger"></i>
+                                            {% else %}
+                                                <i class="bi bi-heart"></i>
+                                            {% endif %}
+                                            <span class="like-count">
+                                                {{post.likes.all|length}}
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Comments -->
+                                <div class="accordion" id="commentAccordian{{post.id}}">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="commentsHeader{{post.id}}">
+                                            <button
+                                              class="accordion-button"
+                                              type="button"
+                                              data-bs-toggle="collapse"
+                                              data-bs-target="#commentsCollapse{{post.id}}"
+                                              aria-expanded="false"
+                                              aria-controls="commentsCollapse{{post.id}}"
+                                            >
+                                                Comments
+                                            </button>
+                                        </h2>
+
+                                        <!-- Target Div -->
+                                        <div
+                                          id="commentsCollapse{{post.id}}"
+                                          class="accordion-collapse collapse"
+                                          aria-labelledby="commentsHeading{{post.id}}"
+                                        >
+                                            <div class="accordion-body">
+                                                <!-- Comment Form -->
+                                                <form
+                                                  method="post"
+                                                  id="commentForm{{post.id}}"
+                                                  onsubmit="submitComment(event, parseInt('{{post.id}}'))"
+                                                >
+                                                    {% csrf_token %}
+                                                    <div class="mb-3">
+                                                        <label for="commentText{{post.id}}" class="form-label">Your Comment</label>
+                                                        <textarea
+                                                          class="form-control"
+                                                          id="commentText{{post.id}}"
+                                                          name="commentText"
+                                                          rows="3"
+                                                        >
+
+                                                        </textarea>
+                                                    </div>
+                                                    <div>
+                                                        <button
+                                                          class="btn btn-sm btn-primary"
+                                                          id="submitButton{{post.id}}"
+                                                          type="submit"
+                                                        >
+                                                            Add Comment
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                            <!-- Previous Comments -->
+                                            <div>
+                                                <h6 class="text-primary mx-2 my-1">Comments:</h6>
+                                                <div id="commentsContainer{{post.id}}" class="accordion-body">
+                                                    {% for comment in post.comments.all|dictsortreversed:"id" %}
+                                                        <div id="comment{{post.id}}">
+                                                            <b>{{comment.user.username}}: </b>
+                                                            {{comment.comment_text}} ({{comment.commented_at|timesince}} ago)
+                                                        </div>
+                                                    {% empty %}
+                                                        <p>No comments to display</p>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-secondary text-center">There are no posts to display</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- New users to follow -->
+        <div class="col-md-3">
+            <div class="text-primary">
+                <h5>People To Follow</h5>
+            </div>
+            <div class="m-2">
+                {% for person in to_follow %}
+                    <div>
+                        <a href="{% url 'profile-page' user_id=person.id %}" class="text-decoration-none text-info">
+                            <h6 class="text-info">
+                                {{person.username|title}}
+                            </h6>
+                        </a>
+                    </div>
+                {% empty %}
+                    <p>No users to follow</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const BASE_URL = 'http://127.0.0.1:8000'
+
+// Handles Post Action
+function submitForm() {
+    event.preventDefault();
+
+    var form = document.getElementById('postForm');
+    var formData = new FormData(form);
+
+    document.getElementById('submitButton').disabled = true;
+
+    fetch(`${BASE_URL}/create_post/`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+        form.reset();
+        var postContainer = document.getElementById('postContainer');
+        postContainer.insertAdjacentHTML('afterbegin',
+            `
+            <div class="card mx-auto m-3" style="width: 600px;">
+                <div class="card-body">
+                    <!-- Post Header -->
+                    <div class="row justify-content-between">
+                        <div class="col-8" style="font-size: 20px;">
+                            <img
+                                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                                class="img-fluid rounded"
+                                alt="User Image"
+                                width="30"
+                            >
+                            <a><i>${data.author.username}</i></a>
+                        </div>
+                        <div class="col-4 text-secondary">
+                            <i>Posted on ${new Date(data.posted_at).toLocaleString('en-US', {hour: 'numeric', minute: 'numeric', hour12: true})}</i>
+                        </div>
+                    </div>
+                    <!-- Post Text -->
+                    <h5 class="card-title m-2">
+                        ${data.post_text}
+                    </h5>
+                    <!-- Post Image -->
+                    ${data.image ? `
+                        <div class="text-center mb-3">
+                            <img
+                                src="${data.image}"
+                                alt="Post Image"
+                                width="300"
+                            >
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            `
+        );
+        document.getElementById('submitButton').disabled = false;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('submitButton').disabled = false;
+    });
+}
+
+// Handles Like Action
+function handleLikeAction(likeIcon) {
+    var postId = likeIcon.getAttribute('data-post-id');
+    var csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+
+    // API request
+    fetch(`${BASE_URL}/update_like/`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf_token
+        },
+        body: JSON.stringify({'post_id': postId})
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+        var likeCountElement = document.querySelector(`.like-icon[data-post-id="${postId}"] .like-count`)
+        likeCountElement.textContent = data.likes.length
+
+        var heartIcon = document.querySelector(`.like-icon[data-post-id="${postId}"] i`);
+        heartIcon.classList.toggle('bi-heart');
+        heartIcon.classList.toggle('bi-heart-fill');
+        heartIcon.classList.toggle('text-danger');
+    })
+    .catch(error => console.error('Error', error))
+}
+
+// Handle Comment Action
+function submitComment(event, postId) {
+    event.preventDefault();
+
+    // Get the comment text
+    const form = document.getElementById(`commentForm${postId}`)
+    const commentText = document.getElementById(`commentText${postId}`).value;
+
+    var csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value
+
+    document.getElementById(`submitButton${postId}`).disabled = true
+
+    // API request
+    fetch(`${BASE_URL}/add_comment/${postId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({'comment_text': commentText})
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+        const commentsContainer = document.getElementById(`commentsContainer${postId}`)
+        commentsContainer.insertAdjacentHTML('afterbegin', 
+            `
+                <div id="comment${data.id}">
+                    <b>${data.user}: </b> ${data.comment_text}
+                </div>
+            `
+        )
+        form.reset()
+    })
+    .catch(error => {
+        console.error(error)
+    })
+    .finally(resp => {
+        document.getElementById(`submitButton${postId}`).disabled = false
+    })
+
+}
+</script>
+{% endblock %}

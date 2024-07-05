@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Social Media App{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero text-center" style="margin-top: 100px;">
+    <div class="container">
+        <h1 class="display-4">Connect with Friends on Social Media App</h1>
+        <p class="lead">Share moments, updates, and memories with the people in your life.</p>
+        <a href="{% url 'register-user' %}" class="btn btn-primary btn-lg">Sign Up for Free</a>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features text-center" style="margin-top: 100px;">
+    <div class="container">
+        <h2 class="mb-4">Key Features</h2>
+        <div class="row">
+            <!-- Feature 1 -->
+            <div class="col-md-4">
+                <i class="bi bi-chat-dots fs-2 mb-3"></i>
+                <h3>Chat with Friends</h3>
+                <p>Stay connected with your friends through instant messaging.</p>
+            </div>
+            <!-- Feature 2 -->
+            <div class="col-md-4">
+                <i class="bi bi-image fs-2 mb-3"></i>
+                <h3>Share Photos</h3>
+                <p>Upload and share your favorite photos with your friends and family.</p>
+            </div>
+            <!-- Feature 3 -->
+            <div class="col-md-4">
+                <i class="bi bi-person fs-2 mb-3"></i>
+                <h3>Connect with People</h3>
+                <p>Discover and connect with people from around the world.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Image Gallery Section -->
+<section class="image-gallery text-center" style="margin-top: 100px;">
+    <div class="container">
+        <h2 class="mb-4">Explore Social Media App</h2>
+        <div class="row mt-5">
+            <!-- Replace these with actual image URLs -->
+            <div class="col-md-4">
+                <img src="https://picsum.photos/id/123/300/300" alt="Explore 1" class="img-fluid mb-3">
+            </div>
+            <div class="col-md-4">
+                <img src="https://picsum.photos/id/432/300/300" alt="Explore 2" class="img-fluid mb-3">
+            </div>
+            <div class="col-md-4">
+                <img src="https://picsum.photos/id/132/300/300" alt="Explore 3" class="img-fluid mb-3">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="cta text-center" style="margin-top: 100px;">
+    <div class="container">
+        <h2 class="mb-4">Join Social Media App Today</h2>
+        <p class="lead">Connect with friends, share memories, and explore a world of possibilities.</p>
+        <a href="{% url 'register-user' %}" class="btn btn-primary btn-lg">Sign Up Now</a>
+    </div>
+</section>
+{% endblock %}
